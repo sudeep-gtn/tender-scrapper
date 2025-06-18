@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tender Data</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .tender-item,
+        .url-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .tender-item a,
+        .url-item a {
+            color: #91a92a;
+            text-decoration: none;
+        }
+
+        .tender-item a:hover,
+        .url-item a:hover {
+            color: #7a8f23;
+            text-decoration: underline;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+        }
+
+        .debug {
+            background-color: #f8d7da;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Tender Data (Nepal Time: {{ current_time }})</h1>
+        <div class="debug">
+            <p><strong>Debug Info:</strong></p>
+            <p>Tenders Loaded: {{ tenders|length }}</p> <a  href="#tenders">Goto tenders</a>
+            <p>Indexed URLs Loaded: {{ indexed_urls|length }}</p>
+        </div>
+
+        <!-- Indexed URLs Section -->
+        <h2>Indexed URLs</h2>
+        {% if indexed_urls %}
+        {% for url in indexed_urls %}
+        <div class="url-item">
+            <p><strong>URL:</strong> <a href="{{ url.url }}" target="_blank">{{ url.url }}</a></p>
+            <p><strong>Title:</strong> {{ url.title or 'N/A' }}</p>
+            <p><strong>Content Preview:</strong> {{ url.content[:100] + '...' if url.content else 'N/A' }}</p>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="no-data">No indexed URLs found.</div>
+        {% endif %}
+
+        <!-- Tenders Section -->
+        <h2 id="tenders">Tenders</h2>
+        {% if tenders %}
+        {% for tender in tenders %}
+        <div class="tender-item">
+            <p><strong>Title:</strong> {{ tender.title or 'N/A' }}</p>
+            <p><strong>Issuer:</strong> {{ tender.issuer or 'N/A' }}</p>
+            <p><strong>Description:</strong> {{ tender.description or 'N/A' }}</p>
+            <p><strong>Publication Date:</strong> {{ tender.pub_date or 'N/A' }}</p>
+            <p><strong>Submission Deadline:</strong> {{ tender.submission_deadline or 'N/A' }}</p>
+            <p><strong>Eligibility:</strong> {{ tender.eligibility or 'N/A' }}</p>
+            <p><strong>Contact:</strong> {{ tender.contact or 'N/A' }}</p>
+            <p><strong>Country:</strong> {{ tender.country or 'N/A' }}</p>
+            <p><strong>Links:</strong><br>
+                <a href="{{ tender.link }}" target="_blank"><strong>View Tender -></strong> {{ tender.link }}</a><br>
+                <a href="{{ tender.source_url }}" target="_blank"><strong>Source -></strong> {{ tender.source_url }}</a>
+            </p>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="no-data">No tenders found.</div>
+        {% endif %}
+    </div>
+</body>
+
+</html>
