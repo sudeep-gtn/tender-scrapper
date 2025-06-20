@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,95 +11,226 @@
             background-color: #f8f9fa;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
-
-        h1,
-        h2 {
+        h1, h2 {
             color: #333;
             margin-bottom: 20px;
         }
-
-        .tender-item,
-        .url-item {
+        .tender-item, .url-item {
             margin-bottom: 15px;
             padding: 10px;
             background-color: #fff;
             border: 1px solid #dee2e6;
             border-radius: 4px;
         }
-
-        .tender-item a,
-        .url-item a {
+        .tender-item a, .url-item a {
             color: #91a92a;
             text-decoration: none;
         }
-
-        .tender-item a:hover,
-        .url-item a:hover {
+        .tender-item a:hover, .url-item a:hover {
             color: #7a8f23;
             text-decoration: underline;
         }
-
         .no-data {
             text-align: center;
             padding: 30px;
             color: #6c757d;
         }
-
         .debug {
             background-color: #f8d7da;
             padding: 10px;
             margin-bottom: 20px;
             border-radius: 4px;
         }
+        .pagination-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        .pagination {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .pagination .page-item {
+            margin: 2px;
+        }
+        .section-container {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
     </style>
 </head>
-
 <body>
     <div class="container">
         <h1>Tender Data (Nepal Time: {{ current_time }})</h1>
         <div class="debug">
             <p><strong>Debug Info:</strong></p>
-            <p>Tenders Loaded: {{ tenders|length }}</p> <a  href="#tenders">Goto tenders</a>
+            <p>Tenders Loaded: {{ tenders|length }}</p> <a href="#tenders">Goto tenders</a>
             <p>Indexed URLs Loaded: {{ indexed_urls|length }}</p>
         </div>
+        <div>Showing the data from following countries:</div>
+        <ul>
+            <li>Bhutan</li>
+            <li>Nepal</li>
+        </ul>
 
-        <!-- Indexed URLs Section -->
-        <h2>Indexed URLs</h2>
-        {% if indexed_urls %}
-        {% for url in indexed_urls %}
-        <div class="url-item">
-            <p><strong>URL:</strong> <a href="{{ url.url }}" target="_blank">{{ url.url }}</a></p>
-            <p><strong>Title:</strong> {{ url.title or 'N/A' }}</p>
-            <p><strong>Content Preview:</strong> {{ url.content[:100] + '...' if url.content else 'N/A' }}</p>
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search tenders by title, issuer, description, or country..." onkeyup="searchTenders()">
         </div>
-        {% endfor %}
-        {% else %}
-        <div class="no-data">No indexed URLs found.</div>
-        {% endif %}
 
-        <!-- Tenders Section -->
-        <h2 id="tenders">Tenders</h2>
-        {% if tenders %}
-        {% for tender in tenders %}
-        <div class="tender-item">
-            <p><strong>Title:</strong> {{ tender.title or 'N/A' }}</p>
-            <p><strong>Issuer:</strong> {{ tender.issuer or 'N/A' }}</p>
-            <p><strong>Description:</strong> {{ tender.description or 'N/A' }}</p>
-            <p><strong>Publication Date:</strong> {{ tender.pub_date or 'N/A' }}</p>
-            <p><strong>Submission Deadline:</strong> {{ tender.submission_deadline or 'N/A' }}</p>
-            <p><strong>Eligibility:</strong> {{ tender.eligibility or 'N/A' }}</p>
-            <p><strong>Contact:</strong> {{ tender.contact or 'N/A' }}</p>
-            <p><strong>Country:</strong> {{ tender.country or 'N/A' }}</p>
-            <p><strong>Links:</strong><br>
-                <a href="{{ tender.link }}" target="_blank"><strong>View Tender -></strong> {{ tender.link }}</a><br>
-                <a href="{{ tender.source_url }}" target="_blank"><strong>Source -></strong> {{ tender.source_url }}</a>
-            </p>
+        <!-- Horizontal Split Layout -->
+        <div class="row">
+            <!-- Indexed URLs Section (Left) -->
+            <div class="col-md-6 section-container">
+                <h2>Indexed URLs</h2>
+                {% if indexed_urls %}
+                    {% for url in indexed_urls %}
+                    <div class="url-item">
+                        <p><strong>URL:</strong> <a href="{{ url.url }}" target="_blank">{{ url.url }}</a></p>
+                        <p><strong>Title:</strong> {{ url.title or 'N/A' }}</p>
+                        <p><strong>Content Preview:</strong> {{ url.content[:100] + '...' if url.content else 'N/A' }}</p>
+                    </div>
+                    {% endfor %}
+                    <!-- URLs Pagination -->
+                    <div class="pagination-container">
+                        {% if total_url_pages > 1 %}
+                            <nav aria-label="URL Pagination">
+                                <ul class="pagination justify-content-center">
+                                    <!-- First Page -->
+                                    <li class="page-item {% if url_page == 1 %}disabled{% endif %}">
+                                        <a class="page-link" href="?page={{ page }}&per_page={{ per_page }}&url_page=1&url_per_page={{ url_per_page }}">First</a>
+                                    </li>
+                                    <!-- Previous Page -->
+                                    <li class="page-item {% if url_page == 1 %}disabled{% endif %}">
+                                        <a class="page-link" href="?page={{ page }}&per_page={{ per_page }}&url_page={{ url_page - 1 }}&url_per_page={{ url_per_page }}">Previous</a>
+                                    </li>
+                                    <!-- Page Numbers -->
+                                    {% set max_pages = 5 %}
+                                    {% set start_page = (url_page - 2) if (url_page - 2) > 0 else 1 %}
+                                    {% set end_page = (start_page + max_pages - 1) if (start_page + max_pages - 1) <= total_url_pages else total_url_pages %}
+                                    {% if start_page > 1 %}
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    {% endif %}
+                                    {% for p in range(start_page, end_page + 1) %}
+                                        <li class="page-item {% if p == url_page %}active{% endif %}">
+                                            <a class="page-link" href="?page={{ page }}&per_page={{ per_page }}&url_page={{ p }}&url_per_page={{ url_per_page }}">{{ p }}</a>
+                                        </li>
+                                    {% endfor %}
+                                    {% if end_page < total_url_pages %}
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    {% endif %}
+                                    <!-- Next Page -->
+                                    <li class="page-item {% if url_page == total_url_pages %}disabled{% endif %}">
+                                        <a class="page-link" href="?page={{ page }}&per_page={{ per_page }}&url_page={{ url_page + 1 }}&url_per_page={{ url_per_page }}">Next</a>
+                                    </li>
+                                    <!-- Last Page -->
+                                    <li class="page-item {% if url_page == total_url_pages %}disabled{% endif %}">
+                                        <a class="page-link" href="?page={{ page }}&per_page={{ per_page }}&url_page={{ total_url_pages }}&url_per_page={{ url_per_page }}">Last</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="no-data">No indexed URLs found.</div>
+                {% endif %}
+            </div>
+
+            <!-- Tenders Section (Right) -->
+            <div class="col-md-6 section-container">
+                <h2 id="tenders">Tenders</h2>
+                {% if tenders %}
+                    {% for tender in tenders %}
+                    <div class="tender-item" data-title="{{ tender.title or 'N/A' }}" data-issuer="{{ tender.issuer or 'N/A' }}" data-description="{{ tender.description or 'N/A' }}" data-country="{{ tender.country or 'N/A' }}">
+                        <p><strong>Title:</strong> {{ tender.title or 'N/A' }}</p>
+                        <p><strong>Issuer:</strong> {{ tender.issuer or 'N/A' }}</p>
+                        <p><strong>Description:</strong> {{ tender.description or 'N/A' }}</p>
+                        <p><strong>Publication Date:</strong> {{ tender.pub_date or 'N/A' }}</p>
+                        <p><strong>Submission Deadline:</strong> {{ tender.submission_deadline or 'N/A' }}</p>
+                        <p><strong>Eligibility:</strong> {{ tender.eligibility or 'N/A' }}</p>
+                        <p><strong>Contact:</strong> {{ tender.contact or 'N/A' }}</p>
+                        <p><strong>Country:</strong> {{ tender.country or 'N/A' }}</p>
+                        <p><strong>Links:</strong><br>
+                            <a href="{{ tender.link }}" target="_blank"><strong>View Tender -></strong> {{ tender.link }}</a><br>
+                            <a href="{{ tender.source_url }}" target="_blank"><strong>Source -></strong> {{ tender.source_url }}</a>
+                        </p>
+                    </div>
+                    {% endfor %}
+                    <!-- Tenders Pagination -->
+                    <div class="pagination-container">
+                        {% if total_pages > 1 %}
+                            <nav aria-label="Tender Pagination">
+                                <ul class="pagination justify-content-center">
+                                    <!-- First Page -->
+                                    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                                        <a class="page-link" href="?page=1&per_page={{ per_page }}&url_page={{ url_page }}&url_per_page={{ url_per_page }}">First</a>
+                                    </li>
+                                    <!-- Previous Page -->
+                                    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                                        <a class="page-link" href="?page={{ page - 1 }}&per_page={{ per_page }}&url_page={{ url_page }}&url_per_page={{ url_per_page }}">Previous</a>
+                                    </li>
+                                    <!-- Page Numbers -->
+                                    {% set max_pages = 5 %}
+                                    {% set start_page = (page - 2) if (page - 2) > 0 else 1 %}
+                                    {% set end_page = (start_page + max_pages - 1) if (start_page + max_pages - 1) <= total_pages else total_pages %}
+                                    {% if start_page > 1 %}
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    {% endif %}
+                                    {% for p in range(start_page, end_page + 1) %}
+                                        <li class="page-item {% if p == page %}active{% endif %}">
+                                            <a class="page-link" href="?page={{ p }}&per_page={{ per_page }}&url_page={{ url_page }}&url_per_page={{ url_per_page }}">{{ p }}</a>
+                                        </li>
+                                    {% endfor %}
+                                    {% if end_page < total_pages %}
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    {% endif %}
+                                    <!-- Next Page -->
+                                    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                                        <a class="page-link" href="?page={{ page + 1 }}&per_page={{ per_page }}&url_page={{ url_page }}&url_per_page={{ url_per_page }}">Next</a>
+                                    </li>
+                                    <!-- Last Page -->
+                                    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                                        <a class="page-link" href="?page={{ total_pages }}&per_page={{ per_page }}&url_page={{ url_page }}&url_per_page={{ url_per_page }}">Last</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="no-data">No tenders found.</div>
+                {% endif %}
+            </div>
         </div>
-        {% endfor %}
-        {% else %}
-        <div class="no-data">No tenders found.</div>
-        {% endif %}
     </div>
-</body>
 
+    <script>
+        function searchTenders() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const tenderItems = document.getElementsByClassName('tender-item');
+            
+            Array.from(tenderItems).forEach(item => {
+                const title = item.getAttribute('data-title').toLowerCase();
+                const issuer = item.getAttribute('data-issuer').toLowerCase();
+                const description = item.getAttribute('data-description').toLowerCase();
+                const country = item.getAttribute('data-country').toLowerCase();
+                
+                if (title.includes(input) || issuer.includes(input) || description.includes(input) || country.includes(input)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
 </html>
