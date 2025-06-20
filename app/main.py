@@ -73,6 +73,7 @@ async def display_tenders(
         # Nepal timezone (+0545)
         nepal_time = datetime.now(ZoneInfo("Asia/Kathmandu")).strftime("%Y-%m-%d %H:%M:%S %Z")
         
+        
         return templates.TemplateResponse(
             "index.html",
             {
