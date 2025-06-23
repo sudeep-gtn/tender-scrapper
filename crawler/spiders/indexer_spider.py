@@ -32,13 +32,13 @@ class IndexerSpider(scrapy.Spider):
         self.ua = UserAgent()
         self.serpapi_key = "11005b544662f18b992432eb381116cc6d0c7c5020013e4b4f46dfd227132f96"
         self.queries = [
-            'tender notice nepal bhutan information security audit 2025',
-            'tender notice nepal bhutan vapt 2025',
-            'tender notice nepal bhutan iso 27001 2025',
-            'tender notice nepal bhutan information security audit 2025',
-            'eoi nepal bhutan tender tender 2025',
-            'procurement notice nepal bhutan 2025',
-            "Information security audit tender notice 2025"
+            'Information security audit tender notice nepal bhutan 2025',
+            'IS audit tender notice nepal bhutan 2025',
+            'iso 27001 tenders 2025 nepal bhutan',
+            'vapt tender notices 2025 nepal, bhutan',
+            'penetration testing procurement 2025',
+            'security audit notice 2025 nepal 2025',
+            "is audit eoi notices"
         ]
         self.indexed_data = []
         self.output_file = 'indexed_urls.json'

@@ -24,7 +24,7 @@ async def display_tenders(
     page: int = Query(1, ge=1, description="Page number for tenders"),
     per_page: int = Query(99, ge=1, le=100, description="Tenders per page"),
     url_page: int = Query(1, ge=1, description="Page number for indexed URLs"),
-    url_per_page: int = Query(500, ge=1, le=100, description="URLs per page")
+    url_per_page: int = Query(99, ge=1, le=100, description="URLs per page")
 ):
     try:
         # Read indexed_urls.json
